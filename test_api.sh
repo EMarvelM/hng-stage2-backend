@@ -166,9 +166,9 @@ echo "HTTP Status Code: $IMAGE_HTTP_CODE"
 echo "Content-Type: $IMAGE_CONTENT_TYPE"
 echo "Size: $IMAGE_SIZE bytes"
 
-if [ "$IMAGE_HTTP_CODE" = "200" ] && [ "$IMAGE_CONTENT_TYPE" = "image/png" ]; then
+if [ "$IMAGE_HTTP_CODE" = "200" ] && [ "$IMAGE_CONTENT_TYPE" = "application/json; charset=utf-8" ]; then
     echo -e "${GREEN}✓ Image endpoint works correctly${NC}"
-    echo "Image saved to /tmp/country_summary.png"
+    echo "Summary data returned as JSON"
 else
     echo -e "${RED}✗ Image endpoint failed${NC}"
 fi

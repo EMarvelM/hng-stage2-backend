@@ -55,7 +55,7 @@ public class CountryService : ICountryService
             if (apiCountry.Currencies != null && apiCountry.Currencies.Length > 0 && !string.IsNullOrEmpty(apiCountry.Currencies[0].Code))
             {
                 currencyCode = apiCountry.Currencies[0].Code;
-                if (rates.TryGetValue(currencyCode, out var rate))
+                if (currencyCode != null && rates.TryGetValue(currencyCode, out var rate))
                 {
                     exchangeRate = (decimal)rate;
                     var multiplier = _random.Next(1000, 2001);
