@@ -24,13 +24,20 @@ RUN apt-get update && apt-get install -y mariadb-server && rm -rf /var/lib/apt/l
 ENV MYSQL_ROOT_PASSWORD=rootpassword
 ENV MYSQL_DATABASE=hng_stage2
 
+# Set ASP.NET Core to listen on port 80
+ENV ASPNETCORE_URLS=http://+:80
+
 # Copy published app
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Copy start script
+COPY start.sh .
+RUN chmod +x start.sh
 
 # Expose ports
 EXPOSE 80
 EXPOSE 3306
 
-# Start MariaDB and the app
-CMD service mariadb start && sleep 5 && dotnet hng-stage2-backend.dll
+# Start using the script
+CMD ["./start.sh"]
