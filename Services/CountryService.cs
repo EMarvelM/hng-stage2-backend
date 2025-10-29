@@ -180,6 +180,18 @@ public class CountryService : ICountryService
         var lastRefresh = await _context.Countries.MaxAsync(c => (DateTime?)c.LastRefreshedAt);
         return (total, lastRefresh);
     }
+
+    public async Task GenerateImageAsync()
+    {
+        var total = await _context.Countries.CountAsync();
+        var top5 = await _context.Countries
+            .Where(c => c.EstimatedGdp.HasValue)
+            .OrderByDescending(c => c.EstimatedGdp)
+            .Take(5)
+            .ToListAsync();
+        var lastRefresh = await _context.Countries.MaxAsync(c => (DateTime?)c.LastRefreshedAt) ?? DateTime.UtcNow;
+        GenerateSummaryImage(total, top5, lastRefresh);
+    }
 }
 
 // API response models

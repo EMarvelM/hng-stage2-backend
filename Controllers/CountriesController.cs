@@ -29,7 +29,7 @@ public class CountriesController : ControllerBase
             {
                 return StatusCode(503, new { error = "External data source unavailable", details = ex.Message });
             }
-            return StatusCode(500, new { error = "Internal server error" });
+            return StatusCode(500, new { error = "Internal server error", details = ex.Message });
         }
     }
 
@@ -40,6 +40,31 @@ public class CountriesController : ControllerBase
         return Ok(countries);
     }
 
+    [HttpGet("image")]
+    public async Task<IActionResult> GetImage()
+    {
+        try
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "cache", "summary.png");
+            
+            // Generate image if it doesn't exist (e.g., after container restart)
+            if (!System.IO.File.Exists(path))
+            {
+                await _countryService.GenerateImageAsync();
+            }
+            
+            if (!System.IO.File.Exists(path))
+                return NotFound(new { error = "Summary image not found" });
+                
+            var fileBytes = System.IO.File.ReadAllBytes(path);
+            return File(fileBytes, "image/png");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to generate or serve image", details = ex.Message });
+        }
+    }
+
     [HttpGet("{name}")]
     public async Task<IActionResult> GetCountry(string name)
     {
@@ -48,7 +73,6 @@ public class CountriesController : ControllerBase
             return NotFound(new { error = "Country not found" });
         return Ok(country);
     }
-
     [HttpDelete("{name}")]
     public async Task<IActionResult> DeleteCountry(string name)
     {
@@ -57,16 +81,6 @@ public class CountriesController : ControllerBase
             return NotFound(new { error = "Country not found" });
         await _countryService.DeleteCountryAsync(name);
         return Ok(new { message = "Country deleted successfully" });
-    }
-
-    [HttpGet("image")]
-    public IActionResult GetImage()
-    {
-        var path = Path.Combine(Directory.GetCurrentDirectory(), "cache", "summary.png");
-        if (!System.IO.File.Exists(path))
-            return NotFound(new { error = "Summary image not found" });
-        var fileBytes = System.IO.File.ReadAllBytes(path);
-        return File(fileBytes, "image/png");
     }
 }
 

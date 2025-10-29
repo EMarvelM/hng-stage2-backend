@@ -9,4 +9,5 @@ public interface ICountryService
     Task<Country?> GetCountryByNameAsync(string name);
     Task DeleteCountryAsync(string name);
     Task<(int total, DateTime? lastRefresh)> GetStatusAsync();
+    Task GenerateImageAsync();
 }
