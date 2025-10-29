@@ -102,14 +102,22 @@ public class CountryService : ICountryService
 
         await _context.SaveChangesAsync();
 
-        // Generate image
-        var total = await _context.Countries.CountAsync();
-        var top5 = await _context.Countries
-            .Where(c => c.EstimatedGdp.HasValue)
-            .OrderByDescending(c => c.EstimatedGdp)
-            .Take(5)
-            .ToListAsync();
-        GenerateSummaryImage(total, top5, now);
+        // Generate image (don't fail refresh if image generation fails)
+        try
+        {
+            var total = await _context.Countries.CountAsync();
+            var top5 = await _context.Countries
+                .Where(c => c.EstimatedGdp.HasValue)
+                .OrderByDescending(c => c.EstimatedGdp)
+                .Take(5)
+                .ToListAsync();
+            GenerateSummaryImage(total, top5, now);
+        }
+        catch (Exception ex)
+        {
+            // Log or ignore image generation failure
+            Console.WriteLine($"Image generation failed: {ex.Message}");
+        }
     }
 
     private void GenerateSummaryImage(int totalCountries, List<Country> top5, DateTime timestamp)
@@ -183,14 +191,23 @@ public class CountryService : ICountryService
 
     public async Task GenerateImageAsync()
     {
-        var total = await _context.Countries.CountAsync();
-        var top5 = await _context.Countries
-            .Where(c => c.EstimatedGdp.HasValue)
-            .OrderByDescending(c => c.EstimatedGdp)
-            .Take(5)
-            .ToListAsync();
-        var lastRefresh = await _context.Countries.MaxAsync(c => (DateTime?)c.LastRefreshedAt) ?? DateTime.UtcNow;
-        GenerateSummaryImage(total, top5, lastRefresh);
+        try
+        {
+            var total = await _context.Countries.CountAsync();
+            var top5 = await _context.Countries
+                .Where(c => c.EstimatedGdp.HasValue)
+                .OrderByDescending(c => c.EstimatedGdp)
+                .Take(5)
+                .ToListAsync();
+            var lastRefresh = await _context.Countries.MaxAsync(c => (DateTime?)c.LastRefreshedAt) ?? DateTime.UtcNow;
+            GenerateSummaryImage(total, top5, lastRefresh);
+        }
+        catch (Exception ex)
+        {
+            // Log or rethrow
+            Console.WriteLine($"Image generation failed: {ex.Message}");
+            throw;
+        }
     }
 }
 
