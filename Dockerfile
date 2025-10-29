@@ -17,8 +17,16 @@ RUN dotnet publish "hng-stage2-backend.csproj" -c Release -o /app/publish /p:Use
 # Use the ASP.NET Core runtime image with MariaDB installed
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
-# Install MariaDB server (MySQL-compatible)
-RUN apt-get update && apt-get install -y mariadb-server && rm -rf /var/lib/apt/lists/*
+# Install system dependencies for SkiaSharp
+RUN apt-get update && apt-get install -y \
+    libfontconfig1 \
+    libfreetype6 \
+    libglib2.0-0 \
+    libharfbuzz0b \
+    libjpeg62-turbo \
+    libpng16-16 \
+    mariadb-server \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for MariaDB
 ENV MYSQL_ROOT_PASSWORD=rootpassword
