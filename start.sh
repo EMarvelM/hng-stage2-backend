@@ -7,8 +7,11 @@ service mariadb start
 echo "Waiting for MariaDB to start..."
 sleep 15
 
-# Run database setup if needed (optional)
-# mysql -u root -prootpassword -e "CREATE DATABASE IF NOT EXISTS hng_stage2;"
+# Initialize MariaDB: create database and set root password
+echo "Initializing MariaDB..."
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS hng_stage2;"
+mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'rootpassword';"
+mysql -u root -prootpassword -e "FLUSH PRIVILEGES;"
 
 # Start the application
 echo "Starting ASP.NET Core app..."
