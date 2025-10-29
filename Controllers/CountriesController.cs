@@ -40,32 +40,28 @@ public class CountriesController : ControllerBase
         return Ok(countries);
     }
 
-    [HttpGet("image")]
+        [HttpGet("image")]
     public async Task<IActionResult> GetImage()
     {
         try
         {
-            var total = await _countryService.GetCountriesAsync(null, null, null);
-            var top5 = total
-                .Where(c => c.EstimatedGdp.HasValue)
-                .OrderByDescending(c => c.EstimatedGdp)
-                .Take(5)
-                .Select(c => new { name = c.Name, estimated_gdp = c.EstimatedGdp })
-                .ToList();
-            var lastRefresh = total.Max(c => c.LastRefreshedAt);
-
-            var summary = new
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "cache", "summary.png");
+            
+            // Generate image if it doesn't exist (e.g., after container restart)
+            if (!System.IO.File.Exists(path))
             {
-                total_countries = total.Count(),
-                last_refreshed_at = lastRefresh.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                top_5_by_gdp = top5
-            };
-
-            return Ok(summary);
+                await _countryService.GenerateImageAsync();
+            }
+            
+            if (!System.IO.File.Exists(path))
+                return NotFound(new { error = "Summary image not found" });
+                
+            var fileBytes = System.IO.File.ReadAllBytes(path);
+            return File(fileBytes, "image/png");
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Failed to generate summary", details = ex.Message });
+            return StatusCode(500, new { error = "Failed to generate or serve image", details = ex.Message });
         }
     }
 
