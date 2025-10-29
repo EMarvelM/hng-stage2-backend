@@ -68,8 +68,8 @@ public class CountryService : ICountryService
             }
             else
             {
-                // no currencies or code null, set gdp to 0
-                estimatedGdp = 0;
+                // no currencies, skip this country
+                continue;
             }
 
             country.CurrencyCode = currencyCode;
